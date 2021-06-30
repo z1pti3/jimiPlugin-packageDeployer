@@ -1,0 +1,196 @@
+<html>
+    <head>
+        <script src="{{ url_for('static', filename='includes/popper-2.9.2/popper-2.9.2.js') }}"></script>
+        <link rel="stylesheet" href="{{ url_for('static', filename='includes/bootstrap-5.0.0-beta3/css/bootstrap.min.css') }}">
+        <script src="{{ url_for('static', filename='includes/bootstrap-5.0.0-beta3/js/bootstrap.min.js') }}"></script>
+        <link rel="stylesheet" href="{{ url_for('static', filename='includes/bootstrap-icons-1.5.0/bootstrap-icons.css') }}">
+        <script src="{{ url_for('static', filename='includes/jquery-3.6.0/js/jquery-3.6.0.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='javascript/helpers.js') }}"></script>
+        <style>
+            body {
+                display: flex;
+                align-items: center;
+                padding-top: 40px;
+                padding-bottom: 40px;
+                background-color: #e2e2e2;
+                color: var(--textColor);
+                padding-bottom: 25px;
+                height: 100%;
+                overflow-y: scroll;
+                font-family: sans-serif;
+            }
+
+            .panel {
+                overflow-y: auto;
+                background-color: white;
+                box-shadow: 0 1px 6px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.24);
+                color: var(--textColor);
+                padding: 5px;
+                border-style: solid;
+                border-color: #000000;
+                border-width: 1px;
+                border-radius: 5px;
+                border-radius: 15px;
+            }
+
+            .form-signin {
+                width: 100%;
+                height: 100%;
+                max-width: 510px;
+                padding: 15px;
+                margin: auto;
+            }
+
+            .form-signin .checkbox {
+                font-weight: 400;
+            }
+
+            .form-signin .form-floating:focus-within {
+                z-index: 2;
+            }
+
+            .form-signin input[type="username"] {
+                margin-bottom: 5px;
+                border-bottom-right-radius: 0;
+                border-bottom-left-radius: 0;
+            }
+
+            .form-signin input[type="password"] {
+                margin-bottom: 5px;
+                border-top-left-radius: 0;
+                border-top-right-radius: 0;
+            }
+
+            .form-signin input[type="otp"] {
+                margin-top: 15px;
+                margin-bottom: 5px;
+                border-top-left-radius: 0;
+                border-top-right-radius: 0;
+            }
+
+            .hidden {
+                display: none;
+            }
+
+            .header {
+                width: 100%;
+                height: 100%;
+                text-align: center;
+                margin: auto;
+            }
+
+            .headerText {
+                font-size: 10vw;
+                display: inline;
+            }
+
+            @media (min-width: 768px) {
+                .bd-placeholder-img-lg {
+                    font-size: 3.5rem;
+                }
+            }
+            a {
+                text-decoration: none;
+            }
+            .iconContainer {
+                box-shadow: 0 1px 6px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.24);
+                border-color: #161616;
+                border-width: 1px;
+                border-style: solid;
+                color: #6c757d;
+            }
+            .iconContainer:hover {
+                background-color: #006af577;
+                color: white!important;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container-fluid">
+            <div class="row align-items-center">
+                <div class="col h-100">
+                    <div class="header">
+                        <h1 class="headerText">Package Deployer </h1>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <main class="form-signin">
+                        <form class="p-4 panel" id="login">
+                            <h1 class="h4 mb-2 fw-normal">Please sign in</h1>
+                        
+                            <div class="form-floating">
+                                <input type="username" class="form-control textbox" id="username" autoComplete="off" placeholder="Username" onkeyup="removeError()">
+                                <label for="username" class="bi-person"> Username</label>
+                            </div>
+                            <div class="form-floating">
+                                <input type="password" class="form-control textbox" id="password" autoComplete="off" placeholder="Password" onkeyup="removeError()">
+                                <label for="password" class="bi-key"> Password</label>
+                            </div>                        
+                            <button class="w-100 btn btn-primary btn-block button bi-lock" type="submit"> Sign in</button>
+                        </form>
+                    </main>
+                </div>
+            </div>
+        </div>
+        <!-- Modal device select -->
+        <div class="modal fade" id="selectDevice" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+                <div class="modal-content panel">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLongTitle">Select a device to continue</h5>
+                        <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="container-fluid p-5 text-center" id="custom-cards">
+                            <div class="row align-items-center g-4 p-5" id="devices">
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+    <script>
+        $("#login").submit(function(e) {
+            e.preventDefault();
+            var body = JSON.stringify({ username: $("#username").val(), password: $("#password").val() })
+            $.ajax({ url: "#", type : "POST", data:body, contentType:"application/json", success: function ( result ) {
+                    $.ajax({ url: "devices/", type : "GET", contentType:"application/json", success: function ( result ) {
+                            $('#devices').empty();
+                            for (x in result["results"]) {
+                                var container = $('<div class="col triggerContainer">')
+                                var link = $('<a href="device/'+result["results"][x]["_id"]+'/" class="noHover">');
+                                var card = $('<div class="card h-100 iconContainer">');
+                                var card_body = $('<div class="card-body">');
+                                var icon = $('<img src="/plugin/packageDeployer/includes/computer.svg" height="95px"/>')
+                                var card_footer = $('<div class="card-footer">').text(result["results"][x]["name"]);
+                                container.append(link)
+                                link.append(card)
+                                card.append(card_body)
+                                card_body.append(icon)
+                                card.append(card_footer)
+                                $('#devices').append(container);
+                            } 
+                            $('#selectDevice').modal('show')
+                        }
+                    });
+                },
+                error: function ( result ) {
+                    if ($("#otp").parent().hasClass("hidden")) {
+                        $("#username").addClass("textboxError");
+                        $("#password").addClass("textboxError");
+                    } else {
+                        $("#username").removeClass("textboxError");
+                        $("#password").removeClass("textboxError");
+                    }
+                }
+            });
+        })
+        function removeError() {
+            $("#username").removeClass("textboxError");
+            $("#password").removeClass("textboxError");
+        }
+    </script>
+</html>
