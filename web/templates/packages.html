@@ -54,6 +54,16 @@
         box-shadow: 0 1px 6px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.24);
 
       }
+      .notAvailable {
+        background-color: #49494980;
+      }
+      .notAvailable:hover {
+        background-color: #494949a6;
+        color: white!important;
+      }
+      .hide {
+        display: none;
+      }
     </style>
   </head>
   <body class="main">
@@ -66,10 +76,20 @@
           <div class="window">
             <div class="row row-cols-1 row-cols-lg-5 align-items-stretch g-4 p-5">
                 {% for package in packages|sort(attribute='name') %}
-                  <div class="col packageContainer" data-name="{{ package["name"] }}">
-                    <a href="deploy/{{ package["_id"] }}/" class="noHover">
-                      <div class="card h-100 iconContainer">
+                  <div class="col packageContainer" data-name="{{ package["name"] }}" id="package_{{ package["_id"] }}" style="cursor: pointer;">
+                    <a onclick="packageClick('{{ package["_id"] }}')" class="noHover">
+                      {% if package["status"] == "Available" %}
+                        <div class="card h-100 iconContainer">
+                      {% else %}
+                        <div class="card h-100 iconContainer notAvailable" id="iconContainer">
+                      {% endif %}
                         <div class="card-body">
+                          {% if package["status"] == "Available" %}
+                            <span id="tagText">{{ package["tag"] }}</span>
+                          {% else %}
+                            <span>{{ package["status"] }}</span>
+                          {% endif %}
+                          <br/>
                           {% if package["icon"] != "" %}
                             <img src="/plugin/packageDeployer/includes/{{ package["icon"] }}" height="95px" />
                           {% else %}
@@ -105,5 +125,102 @@
         </script>
       </div>
     </main>
+    <!-- Modal package select -->
+    <div class="modal fade" id="packageSelect" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+          <div class="modal-content panel">
+              <div class="modal-header">
+                  <h5 class="modal-title" id="exampleModalLongTitle">Workflow Status</h5>
+                  <span aria-hidden="true">&times;</span>
+                  </button>
+              </div>
+              <div class="modal-body">
+                <div id="packageScreenInstall" class="hide">
+                  <strong>Install Now</strong>
+                </div>
+                <div id="packageScreenLoading" class="hide">
+                  <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                  </div>
+                  <strong id="statusText"></strong>
+                </div>
+                <div id="packageScreenUninstall" class="hide">
+                  <strong>Install Completed</strong>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              </div>
+          </div>
+      </div>
+    </div>
+    <script>
+      var activePackage = "";
+      function packageClick(package_id) {
+        activePackage = package_id;
+        $('#packageScreenInstall').addClass("hide");
+        $('#packageScreenUninstall').addClass("hide");
+        $('#packageScreenLoading').addClass("hide");
+        $.ajax({ url: "package/"+package_id+"/", type : "GET", contentType:"application/json", success: function ( result ) {
+            if (result["status"] == "Available") {
+              $('#packageScreenInstall').removeClass("hide")
+            } else if (result["status"] == "Installed") {
+              $('#packageScreenUninstall').removeClass("hide")
+            } else {
+              $('#statusText').text(result["status"]);
+              $('#packageScreenLoading').removeClass("hide")
+            }
+            $('#packageSelect').modal('show')
+          }
+        });
+      }
+      function refreshPackages() {
+        $.ajax({ url: "packages/", type : "GET", contentType:"application/json", success: function ( result ) {
+            for (x in result["results"]) {
+              var package = result["results"][x];
+              if (package["status"] == "Available") {
+                if ($('#package_'+package["_id"]).find("#iconContainer").hasClass("notAvailable")) {
+                  $('#package_'+package["_id"]).find("#iconContainer").removeClass("notAvailable")
+                }
+                if ($('#package_'+package["_id"]).find("#tagText").text != package["tag"]) {
+                  $('#package_'+package["_id"]).find("#tagText").text(package["tag"])
+                }
+                if (package["_id"] == activePackage) {
+                  if ($('#packageScreenInstall').hasClass("hide")) {
+                    $('#packageScreenInstall').removeClass("hide");
+                    $('#packageScreenUninstall').addClass("hide");
+                    $('#packageScreenLoading').addClass("hide");
+                  }
+                }
+              } else {
+                if (!$('#package_'+package["_id"]).find("#iconContainer").hasClass("notAvailable")) {
+                  $('#package_'+package["_id"]).find("#iconContainer").addClass("notAvailable")
+                }
+                if ($('#package_'+package["_id"]).find("#tagText").text != package["status"]) {
+                  $('#package_'+package["_id"]).find("#tagText").text(package["status"])
+                }
+                if (package["_id"] == activePackage) {
+                  if (package["status"] == "Installed") {
+                    if ($('#packageScreenUninstall').hasClass("hide")) {
+                      $('#packageScreenInstall').addClass("hide");
+                      $('#packageScreenUninstall').removeClass("hide");
+                      $('#packageScreenLoading').addClass("hide");
+                    }
+                  } else {
+                    if ($('#packageScreenLoading').hasClass("hide")) {
+                      $('#packageScreenInstall').addClass("hide");
+                      $('#packageScreenUninstall').addClass("hide");
+                      $('#packageScreenLoading').removeClass("hide");
+                    }
+                  }
+                }
+              }
+            }
+          }
+        });
+        setTimeout(refreshPackages, 2500);
+      }
+      setTimeout(refreshPackages, 2500);
+    </script>
   </body>
 </html>

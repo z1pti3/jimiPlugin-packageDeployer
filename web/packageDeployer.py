@@ -46,8 +46,6 @@ def __PUBLIC__doLogin():
     response.set_cookie("packageDeployer", value=data["username"], max_age=1800, httponly=True)
     return response, 200
 
-# jimi.api.request.cookies["jimiAuth"]
-
 @pluginPages.route("/devices/",methods=["GET"])
 @authenticated
 def __PUBLIC__devices():
@@ -61,10 +59,19 @@ def __PUBLIC__devices():
 @pluginPages.route("/device/<asset_id>/",methods=["GET"])
 @authenticated
 def __PUBLIC__manageDevicePage(asset_id):
+    packages = __PUBLIC__packages(asset_id)[0]["results"]
+    return render_template("packages.html", packages=packages)
+
+@pluginPages.route("/device/<asset_id>/packages/",methods=["GET"])
+@authenticated
+def __PUBLIC__packages(asset_id):
     packages = packageDeployer._packageDeployer().query(query={})["results"]
     playbookIds = []
     for package in packages:
-        playbookIds.append(jimi.db.ObjectId(package["playbook_id"]))
+        try:
+            playbookIds.append(jimi.db.ObjectId(package["playbook_id"]))
+        except:
+            pass
     playbooks = playbook._playbook().query(query={ "_id" : { "$in" : playbookIds }, "playbookData.asset_id" : asset_id },fields=["_id","playbookData","result"])["results"]
     playbookHash = {}
     for playbookItem in playbooks:
@@ -80,4 +87,22 @@ def __PUBLIC__manageDevicePage(asset_id):
                     package["status"] = "Unknown"
         else:
             package["status"] = "Available"
-    return render_template("packages.html", packages=packages)
+    return { "results" : packages }, 200
+
+@pluginPages.route("/device/<asset_id>/package/<package_id>/",methods=["GET"])
+@authenticated
+def __PUBLIC__package(asset_id,package_id):
+    package = packageDeployer._packageDeployer().query(id=package_id)["results"]
+    try:
+        playbookPackage = playbook._playbook().query(query={ "_id" : jimi.db.ObjectId(package["playbook_id"]), "playbookData.asset_id" : asset_id },fields=["_id","playbookData","result"])["results"][0]
+        status = "Available"
+        if playbookPackage["result"]:
+            status = "Installed"
+        else:
+            try:
+                status = playbookPackage["playbookData"]["status"]
+            except KeyError:
+                status = "Unknown"
+    except:
+        status = "Available"
+    return { "status" : status }, 200
