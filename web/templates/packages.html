@@ -79,15 +79,15 @@
                   <div class="col packageContainer" data-name="{{ package["name"] }}" id="package_{{ package["_id"] }}" style="cursor: pointer;">
                     <a onclick="packageClick('{{ package["_id"] }}')" class="noHover">
                       {% if package["status"] == "Available" %}
-                        <div class="card h-100 iconContainer">
+                        <div class="card h-100 iconContainer" id="iconContainer_{{ package["_id"] }}">
                       {% else %}
-                        <div class="card h-100 iconContainer notAvailable" id="iconContainer">
+                        <div class="card h-100 iconContainer notAvailable" id="iconContainer_{{ package["_id"] }}">
                       {% endif %}
                         <div class="card-body">
                           {% if package["status"] == "Available" %}
-                            <span id="tagText">{{ package["tag"] }}</span>
+                            <span id="tagText_{{ package["_id"] }}">{{ package["tag"] }}</span>
                           {% else %}
-                            <span>{{ package["status"] }}</span>
+                            <span id="tagText_{{ package["_id"] }}">{{ package["status"] }}</span>
                           {% endif %}
                           <br/>
                           {% if package["icon"] != "" %}
@@ -135,8 +135,9 @@
                   </button>
               </div>
               <div class="modal-body">
+                <span id="packageDescription"></span>
                 <div id="packageScreenInstall" class="hide">
-                  <strong>Install Now</strong>
+                  <button type="button" class="btn btn-secondary" onclick="installPackage()">Install Package</button>
                 </div>
                 <div id="packageScreenLoading" class="hide">
                   <div class="spinner-border" role="status">
@@ -162,6 +163,7 @@
         $('#packageScreenUninstall').addClass("hide");
         $('#packageScreenLoading').addClass("hide");
         $.ajax({ url: "package/"+package_id+"/", type : "GET", contentType:"application/json", success: function ( result ) {
+            $('#packageDescription').text(result["description"]);
             if (result["status"] == "Available") {
               $('#packageScreenInstall').removeClass("hide")
             } else if (result["status"] == "Installed") {
@@ -174,16 +176,29 @@
           }
         });
       }
+      function installPackage() {
+        $.ajax({ url: "deploy/"+activePackage+"/", type : "GET", contentType:"application/json", success: function ( result ) {
+            $('#packageScreenInstall').addClass("hide");
+            $('#packageScreenLoading').removeClass("hide");
+            $('#statusText').text("Requested");
+          }, error: function ( result ) {
+            alert("Error: Unable to start install please try again later.");
+          }
+        });
+      }
       function refreshPackages() {
         $.ajax({ url: "packages/", type : "GET", contentType:"application/json", success: function ( result ) {
             for (x in result["results"]) {
               var package = result["results"][x];
               if (package["status"] == "Available") {
-                if ($('#package_'+package["_id"]).find("#iconContainer").hasClass("notAvailable")) {
-                  $('#package_'+package["_id"]).find("#iconContainer").removeClass("notAvailable")
+                if ($('#iconContainer_'+package["_id"]).hasClass("notAvailable")) {
+                  $('#iconContainer_'+package["_id"]).removeClass("notAvailable")
                 }
-                if ($('#package_'+package["_id"]).find("#tagText").text != package["tag"]) {
-                  $('#package_'+package["_id"]).find("#tagText").text(package["tag"])
+                if (package["tag"] == null) {
+                  package["tag"] = " "
+                }
+                if ($('#tagText_'+package["_id"]).text() != package["tag"]) {
+                  $('#tagText_'+package["_id"]).text(package["tag"])
                 }
                 if (package["_id"] == activePackage) {
                   if ($('#packageScreenInstall').hasClass("hide")) {
@@ -193,11 +208,11 @@
                   }
                 }
               } else {
-                if (!$('#package_'+package["_id"]).find("#iconContainer").hasClass("notAvailable")) {
-                  $('#package_'+package["_id"]).find("#iconContainer").addClass("notAvailable")
+                if (!$('#iconContainer_'+package["_id"]).hasClass("notAvailable")) {
+                  $('#iconContainer_'+package["_id"]).addClass("notAvailable")
                 }
-                if ($('#package_'+package["_id"]).find("#tagText").text != package["status"]) {
-                  $('#package_'+package["_id"]).find("#tagText").text(package["status"])
+                if ($('#tagText_'+package["_id"]).text() != package["status"]) {
+                  $('#tagText_'+package["_id"]).text(package["status"])
                 }
                 if (package["_id"] == activePackage) {
                   if (package["status"] == "Installed") {
@@ -211,6 +226,9 @@
                       $('#packageScreenInstall').addClass("hide");
                       $('#packageScreenUninstall').addClass("hide");
                       $('#packageScreenLoading').removeClass("hide");
+                    }
+                    if ($('#statusText').text() != package["status"]) {
+                      $('#statusText').text(package["status"]);
                     }
                   }
                 }

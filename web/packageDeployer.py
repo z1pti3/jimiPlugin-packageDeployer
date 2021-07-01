@@ -66,23 +66,23 @@ def __PUBLIC__manageDevicePage(asset_id):
 @authenticated
 def __PUBLIC__packages(asset_id):
     packages = packageDeployer._packageDeployer().query(query={})["results"]
-    playbookIds = []
+    playbookNames = []
     for package in packages:
         try:
-            playbookIds.append(jimi.db.ObjectId(package["playbook_id"]))
+            playbookNames.append(package["playbook_name"])
         except:
             pass
-    playbooks = playbook._playbook().query(query={ "_id" : { "$in" : playbookIds }, "playbookData.asset_id" : asset_id },fields=["_id","playbookData","result"])["results"]
+    playbooks = playbook._playbook().query(query={ "name" : { "$in" : playbookNames }, "playbookData.asset_id" : asset_id },fields=["_id","playbookData","result","name"])["results"]
     playbookHash = {}
     for playbookItem in playbooks:
-        playbookHash[playbookItem["_id"]] = playbookItem
+        playbookHash[playbookItem["name"]] = playbookItem
     for package in packages:
-        if package["playbook_id"] in playbookHash:
-            if playbookHash[package["playbook_id"]]["result"]:
+        if package["playbook_name"] in playbookHash:
+            if playbookHash[package["playbook_name"]]["result"]:
                 package["status"] = "Installed"
             else:
                 try:
-                    package["status"] = playbookHash[package["playbook_id"]]["playbookData"]["status"]
+                    package["status"] = playbookHash[package["playbook_name"]]["playbookData"]["status"]
                 except KeyError:
                     package["status"] = "Unknown"
         else:
@@ -92,17 +92,27 @@ def __PUBLIC__packages(asset_id):
 @pluginPages.route("/device/<asset_id>/package/<package_id>/",methods=["GET"])
 @authenticated
 def __PUBLIC__package(asset_id,package_id):
-    package = packageDeployer._packageDeployer().query(id=package_id)["results"]
+    package = packageDeployer._packageDeployer().query(id=package_id)["results"][0]
     try:
-        playbookPackage = playbook._playbook().query(query={ "_id" : jimi.db.ObjectId(package["playbook_id"]), "playbookData.asset_id" : asset_id },fields=["_id","playbookData","result"])["results"][0]
-        status = "Available"
+        playbookPackage = playbook._playbook().query(query={ "name" : package["playbook_name"], "playbookData.asset_id" : asset_id },fields=["_id","playbookData","result","name"])["results"][0]
+        package["status"] = "Available"
         if playbookPackage["result"]:
-            status = "Installed"
+            package["status"] = "Installed"
         else:
             try:
-                status = playbookPackage["playbookData"]["status"]
+                package["status"] = playbookPackage["playbookData"]["status"]
             except KeyError:
-                status = "Unknown"
+                package["status"] = "Unknown"
     except:
-        status = "Available"
-    return { "status" : status }, 200
+        package["status"] = "Available"
+    return package, 200
+
+@pluginPages.route("/device/<asset_id>/deploy/<package_id>/",methods=["GET"])
+@authenticated
+def __PUBLIC__deployPackage(asset_id,package_id):
+    package = packageDeployer._packageDeployer().query(id=package_id)["results"][0]
+    playbookPackage = playbook._playbook().query(query={ "name" : package["playbook_name"], "playbookData.asset_id" : asset_id },fields=["_id","name","playbookData","result","name"])["results"]
+    if len(playbookPackage) == 0:
+        playbook._playbook().new(package["acl"],package["playbook_name"],asset_id,{ "asset_id" : asset_id, "status" : "Requested" },0,0)
+        return { }, 200
+    return { }, 404
