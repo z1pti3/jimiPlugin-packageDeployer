@@ -17,6 +17,12 @@
       *::-webkit-scrollbar-thumb {
         background-color: #e2e2e2;
       }
+      body {
+        background-image: url("/plugin/packageDeployer/includes/background.jpg");
+        background-repeat:no-repeat;
+        background-position: center center;
+        overflow: hidden;
+      }
       a {
         text-decoration: none;
       }
@@ -24,6 +30,18 @@
         background-color: #e2e2e2;
         overflow: hidden;
       }
+      .panel {
+                overflow-y: auto;
+                background-color: white;
+                box-shadow: 0 1px 6px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.24);
+                color: var(--textColor);
+                padding: 5px;
+                border-style: solid;
+                border-color: #000000;
+                border-width: 1px;
+                border-radius: 5px;
+                border-radius: 15px;
+            }
       .window {
         background-color: white;
         height: 80%;
@@ -42,7 +60,7 @@
         color: #6c757d;
       }
       .iconContainer:hover {
-        background-color: #006af577;
+        background-color: #012169;
         color: white!important;
       }
       .form-control:focus {
@@ -64,12 +82,99 @@
       .hide {
         display: none;
       }
+
+      #topbar {
+          position: fixed;
+          top: 0;
+          left: 0;
+          z-index: 1;
+          width: 100%;
+          max-width: 100%;
+          background-color: #012169;
+          height: 50px;
+          box-shadow: 0 1px 6px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.24);
+          border-style: solid;
+          border-color: black;
+          border-width: 1px;
+          color: white;
+          padding-left: 10px;
+          display: flex;
+      }
+
+      #topbar-right {
+          min-width: 350px;
+          margin-right: 10px;
+          float: right;
+          text-align: right;
+      }
+
+      .linkRight {
+          float: right;
+      }
+
+      .home {
+          padding-left: 10px;
+          padding-right: 30px;
+          vertical-align: middle;
+          text-align: center;
+          display: flex;
+          height: 100%;
+          flex-direction: column;
+          justify-content: center;
+          line-height: unset;
+          font-weight: 600;
+          font-size: 35px;
+          color: white;
+      }
+
+      .home:hover {
+          color: white;
+          text-decoration: none;
+      }
+
+      .home:active, .homeActive {
+          color: white;
+          text-decoration: none;
+          background-color: unset;
+      }
+
+      .link {
+          padding-left: 10px;
+          padding-right: 10px;
+          text-align: center;
+          vertical-align: bottom;
+          display: flex;
+          height: 100%;
+          flex-direction: column;
+          justify-content: flex-end;
+          color: white;
+          min-width:110px;
+      }
+
+      .link:hover {
+          background-color: red;
+          color: white;
+          text-decoration: none;
+      }
+
+      .link:focus, .active {
+          background-color: #012169;
+      }
     </style>
   </head>
   <body class="main">
+    <header class="site-header sticky-top py-1">
+      <nav class="container d-flex flex-column flex-md-row justify-content-between" id="topbar">
+        <img src="/plugin/packageDeployer/includes/logo.png" />
+        <span exact class="link">{{ device }}</span>
+        <div class="container" id="topbar-right">
+          <a class="link linkRight bi-eject" href="/plugin/packageDeployer/">Logout</a>
+        </div>
+      </nav>
+    </header>
     <main>
       <div class="position-relative overflow-hidden">
-        <div class="container p-5 text-center" id="custom-cards">
+        <div class="container p-5 mt-5 text-center" id="custom-cards">
           <div class="text-start" >
             <input type="text" class="form-control searchBox w-75" id="packageSearch" onkeyup="doPackageSearch()" placeholder="Search...">
           </div>
@@ -128,17 +233,12 @@
     <!-- Modal package select -->
     <div class="modal fade" id="packageSelect" tabindex="-1">
       <div class="modal-dialog modal-dialog-centered" role="document">
-          <div class="modal-content panel">
+          <div class="modal-content panel" style="background: linear-gradient(180deg, #012169 60px,#ffffff 0px);">
               <div class="modal-header">
-                  <h5 class="modal-title" id="exampleModalLongTitle">Workflow Status</h5>
-                  <span aria-hidden="true">&times;</span>
-                  </button>
+                  <h5 class="modal-title" id="titleText" style="color: white;"></h5>
               </div>
               <div class="modal-body">
                 <span id="packageDescription"></span>
-                <div id="packageScreenInstall" class="hide">
-                  <button type="button" class="btn btn-secondary" onclick="installPackage()">Install Package</button>
-                </div>
                 <div id="packageScreenLoading" class="hide">
                   <div class="spinner-border" role="status">
                     <span class="visually-hidden">Loading...</span>
@@ -150,7 +250,8 @@
                 </div>
               </div>
               <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-secondary hide" id="packageScreenInstall" onclick="installPackage()" style="background-color: red;">Install Package</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="background-color: red;">Close</button>
               </div>
           </div>
       </div>
@@ -164,6 +265,7 @@
         $('#packageScreenLoading').addClass("hide");
         $.ajax({ url: "package/"+package_id+"/", type : "GET", contentType:"application/json", success: function ( result ) {
             $('#packageDescription').text(result["description"]);
+            $('#titleText').text(result["name"]);
             if (result["status"] == "Available") {
               $('#packageScreenInstall').removeClass("hide")
             } else if (result["status"] == "Installed") {

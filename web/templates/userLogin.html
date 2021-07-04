@@ -18,6 +18,10 @@
                 height: 100%;
                 overflow-y: scroll;
                 font-family: sans-serif;
+                background-image: url("/plugin/packageDeployer/includes/background.jpg");
+                background-repeat:no-repeat;
+                background-position: center center;
+                overflow: hidden;
             }
 
             .panel {
@@ -79,11 +83,6 @@
                 margin: auto;
             }
 
-            .headerText {
-                font-size: 10vw;
-                display: inline;
-            }
-
             @media (min-width: 768px) {
                 .bd-placeholder-img-lg {
                     font-size: 3.5rem;
@@ -100,8 +99,15 @@
                 color: #6c757d;
             }
             .iconContainer:hover {
-                background-color: #006af577;
+                background-color: #012169;
                 color: white!important;
+            }
+            .loginBox {
+                background: linear-gradient(180deg, #012169 105px,#ffffff 0px);
+            }
+
+            .triggerContainer {
+                max-width: 200px;
             }
         </style>
     </head>
@@ -110,13 +116,22 @@
             <div class="row align-items-center">
                 <div class="col h-100">
                     <div class="header">
-                        <h1 class="headerText">Package Deployer </h1>
+                        
                     </div>
                 </div>
                 <div class="col-6">
                     <main class="form-signin">
-                        <form class="p-4 panel" id="login">
-                            <h1 class="h4 mb-2 fw-normal">Please sign in</h1>
+                        <form class="p-4 panel loginBox" id="login">
+                            <div class="mx-auto text-center">
+                                <img src="/plugin/packageDeployer/includes/logo.png" />
+                            </div>
+                            <br>
+                            <br>
+                            <h1 class="h4 mb-2 fw-bold">Welcome.</h1>
+                            <br>
+                            <span>Please enter your login details:</span>
+                            <br>
+                            <br>
                         
                             <div class="form-floating">
                                 <input type="username" class="form-control textbox" id="username" autoComplete="off" placeholder="Username" onkeyup="removeError()">
@@ -125,20 +140,20 @@
                             <div class="form-floating">
                                 <input type="password" class="form-control textbox" id="password" autoComplete="off" placeholder="Password" onkeyup="removeError()">
                                 <label for="password" class="bi-key"> Password</label>
-                            </div>                        
-                            <button class="w-100 btn btn-primary btn-block button bi-lock" type="submit"> Sign in</button>
+                            </div>
+                            <br>                
+                            <button class="w-100 btn btn-primary btn-block button bi-lock" type="submit" style="background-color: red;"> Login in</button>
                         </form>
                     </main>
                 </div>
             </div>
         </div>
         <!-- Modal device select -->
-        <div class="modal fade" id="selectDevice" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+        <div class="modal fade" id="selectDevice" tabindex="-1" role="dialog">
             <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
-                <div class="modal-content panel">
+                <div class="modal-content panel" style="background: linear-gradient(180deg, #012169 68px,#ffffff 0px);">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLongTitle">Select a device to continue</h5>
-                        <span aria-hidden="true">&times;</span>
+                        <h5 class="modal-title" id="exampleModalLongTitle" style="color: white;">Select a device to continue</h5>
                         </button>
                     </div>
                     <div class="modal-body">
@@ -147,6 +162,9 @@
 
                             </div>
                         </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="background-color: red;">Close</button>
                     </div>
                 </div>
             </div>

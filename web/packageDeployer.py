@@ -31,7 +31,6 @@ def authenticated(f):
     return wrap
 
 @pluginPages.route('/includes/<file>')
-@authenticated
 def __PUBLIC__custom_static(file):
     return send_from_directory(str(Path("plugins/packageDeployer/web/includes")), file)
 
@@ -60,7 +59,8 @@ def __PUBLIC__devices():
 @authenticated
 def __PUBLIC__manageDevicePage(asset_id):
     packages = __PUBLIC__packages(asset_id)[0]["results"]
-    return render_template("packages.html", packages=packages)
+    device = asset._asset().query(id=asset_id)["results"][0]["name"]
+    return render_template("packages.html", packages=packages, device=device)
 
 @pluginPages.route("/device/<asset_id>/packages/",methods=["GET"])
 @authenticated
