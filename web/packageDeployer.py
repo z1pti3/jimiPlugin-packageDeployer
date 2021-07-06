@@ -59,13 +59,14 @@ def __PUBLIC__devices():
 @authenticated
 def __PUBLIC__manageDevicePage(asset_id):
     packages = __PUBLIC__packages(asset_id)[0]["results"]
+    containers = packageDeployer._packageDeployer().query(query={ "container" : True })["results"]
     device = asset._asset().query(id=asset_id)["results"][0]["name"]
-    return render_template("packages.html", packages=packages, device=device)
+    return render_template("packages.html", packages=packages, device=device, containers=containers)
 
 @pluginPages.route("/device/<asset_id>/packages/",methods=["GET"])
 @authenticated
 def __PUBLIC__packages(asset_id):
-    packages = packageDeployer._packageDeployer().query(query={})["results"]
+    packages = packageDeployer._packageDeployer().query(query={ "container_name" : { "$ne" : "" } })["results"]
     playbookNames = []
     for package in packages:
         try:
@@ -89,6 +90,46 @@ def __PUBLIC__packages(asset_id):
             package["status"] = "Available"
     return { "results" : packages }, 200
 
+@pluginPages.route("/device/<asset_id>/<container_id>/",methods=["GET"])
+@authenticated
+def __PUBLIC__manageDeviceContainerPage(asset_id,container_id):
+    packages = __PUBLIC__containerPackages(asset_id,container_id)[0]["results"]
+    device = asset._asset().query(id=asset_id)["results"][0]["name"]
+    return render_template("packages.html", packages=packages, device=device, containers=[])
+
+@pluginPages.route("/device/<asset_id>/<container_id>/packages/",methods=["GET"])
+@authenticated
+def __PUBLIC__containerPackages(asset_id,container_id):
+    container = packageDeployer._packageDeployer().query(id=container_id)["results"][0]
+    packages = packageDeployer._packageDeployer().query(query={ "container_name" : container["name"], "container" : { "$ne" : True } })["results"]
+    playbookNames = []
+    for package in packages:
+        try:
+            playbookNames.append(package["playbook_name"])
+        except:
+            pass
+    playbooks = playbook._playbook().query(query={ "name" : { "$in" : playbookNames }, "playbookData.asset_id" : asset_id },fields=["_id","playbookData","result","name"])["results"]
+    playbookHash = {}
+    for playbookItem in playbooks:
+        playbookHash[playbookItem["name"]] = playbookItem
+    for package in packages:
+        if package["playbook_name"] in playbookHash:
+            if playbookHash[package["playbook_name"]]["result"]:
+                package["status"] = "Installed"
+            else:
+                try:
+                    package["status"] = playbookHash[package["playbook_name"]]["playbookData"]["status"]
+                except KeyError:
+                    package["status"] = "Unknown"
+        else:
+            package["status"] = "Available"
+    return { "results" : packages }, 200
+
+@pluginPages.route("/device/<asset_id>/<container_id>/package/<package_id>/",methods=["GET"])
+@authenticated
+def __PUBLIC__Containerpackage(asset_id,container_id,package_id):
+    return __PUBLIC__package(asset_id,package_id)
+
 @pluginPages.route("/device/<asset_id>/package/<package_id>/",methods=["GET"])
 @authenticated
 def __PUBLIC__package(asset_id,package_id):
@@ -106,6 +147,11 @@ def __PUBLIC__package(asset_id,package_id):
     except:
         package["status"] = "Available"
     return package, 200
+
+@pluginPages.route("/device/<asset_id>/<container_id>/deploy/<package_id>/",methods=["GET"])
+@authenticated
+def __PUBLIC__containerDeployPackage(asset_id,container_id,package_id):
+    return __PUBLIC__deployPackage(asset_id,package_id)
 
 @pluginPages.route("/device/<asset_id>/deploy/<package_id>/",methods=["GET"])
 @authenticated

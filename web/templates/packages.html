@@ -180,6 +180,24 @@
           </div>
           <div class="window">
             <div class="row row-cols-1 row-cols-lg-5 align-items-stretch g-4 p-5">
+              {% for container in containers|sort(attribute='name') %}
+              <div class="col packageContainer" data-name="{{ container["name"] }}" id="container_{{ container["_id"] }}" style="cursor: pointer;">
+                <a href="{{ container["_id"] }}" class="noHover">
+                  <div class="card h-100 iconContainer" id="iconContainer_{{ container["_id"] }}">
+                    <div class="card-body">
+                      {% if container["icon"] != "" %}
+                        <img src="/plugin/packageDeployer/includes/{{ container["icon"] }}" height="95px" />
+                      {% else %}
+                        <img src="/plugin/packageDeployer/includes/folder.svg" height="95px" />
+                      {% endif %}
+                    </div>
+                    <div class="card-footer">
+                      {{ container["name"] }}
+                    </div>
+                  </div>
+                </a>
+              </div>
+              {% endfor %}
                 {% for package in packages|sort(attribute='name') %}
                   <div class="col packageContainer" data-name="{{ package["name"] }}" id="package_{{ package["_id"] }}" style="cursor: pointer;">
                     <a onclick="packageClick('{{ package["_id"] }}')" class="noHover">

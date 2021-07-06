@@ -1,7 +1,7 @@
 import jimi
 
 class _packageDeployer(jimi.plugin._plugin):
-    version = 0.1
+    version = 0.12
 
     def install(self):
         jimi.model.registerModel("packageDeployer","_packageDeployer","_document","plugins.packageDeployer.models.packageDeployer",True)
