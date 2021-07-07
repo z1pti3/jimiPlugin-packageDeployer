@@ -66,7 +66,7 @@ def __PUBLIC__manageDevicePage(asset_id):
 @pluginPages.route("/device/<asset_id>/packages/",methods=["GET"])
 @authenticated
 def __PUBLIC__packages(asset_id):
-    packages = packageDeployer._packageDeployer().query(query={ "container_name" : { "$ne" : "" } })["results"]
+    packages = packageDeployer._packageDeployer().query(query={"$or":[{"container_name":""},{"container_name":{"$exists":False}}]})["results"]
     playbookNames = []
     for package in packages:
         try:
