@@ -186,9 +186,9 @@
                   <div class="card h-100 iconContainer" id="iconContainer_{{ container["_id"] }}">
                     <div class="card-body">
                       {% if container["icon"] != "" %}
-                        <img src="/plugin/packageDeployer/includes/{{ container["icon"] }}" height="95px" style="width: 100%;max-width: 144px;" />
+                        <img src="/plugin/packageDeployer/includes/{{ container["icon"] }}" height="95px" style="max-width: 95px;" />
                       {% else %}
-                        <img src="/plugin/packageDeployer/includes/folder.svg" height="95px" style="width: 100%;max-width: 144px;" />
+                        <img src="/plugin/packageDeployer/includes/folder.svg" height="95px" style="max-width: 95px;" />
                       {% endif %}
                     </div>
                     <div class="card-footer">
@@ -214,9 +214,9 @@
                           {% endif %}
                           <br/>
                           {% if package["icon"] != "" %}
-                            <img src="/plugin/packageDeployer/includes/{{ package["icon"] }}" height="95px" style="width: 100%;max-width: 144px;" />
+                            <img src="/plugin/packageDeployer/includes/{{ package["icon"] }}" height="95px" style="max-width: 95px;" />
                           {% else %}
-                            <img src="/plugin/packageDeployer/includes/none.svg" height="95px" style="width: 100%;max-width: 144px;" />
+                            <img src="/plugin/packageDeployer/includes/none.svg" height="95px" style="max-width: 95px;" />
                           {% endif %}
                         </div>
                         <div class="card-footer">
