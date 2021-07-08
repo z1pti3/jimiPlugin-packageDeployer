@@ -185,11 +185,13 @@
                 <a href="{{ container["_id"] }}" class="noHover">
                   <div class="card h-100 iconContainer" id="iconContainer_{{ container["_id"] }}">
                     <div class="card-body">
+                      <div class="align middle" style="height:100%;display:flex">
                       {% if container["icon"] != "" %}
-                        <img src="/plugin/packageDeployer/includes/{{ container["icon"] }}" height="95px" style="max-width: 95px;" />
+                        <img src="/plugin/packageDeployer/includes/{{ container["icon"] }}" height="95px" style="max-width: 95px;margin:auto" />
                       {% else %}
-                        <img src="/plugin/packageDeployer/includes/folder.svg" height="95px" style="max-width: 95px;" />
+                        <img src="/plugin/packageDeployer/includes/folder.svg" height="95px" style="max-width: 95px;margin:auto" />
                       {% endif %}
+                    </div>
                     </div>
                     <div class="card-footer">
                       {{ container["name"] }}
@@ -214,7 +216,6 @@
                           {% endif %}
                           <br/>
                           {% if package["icon"] != "" %}
-                            <img src="/plugin/packageDeployer/includes/{{ package["icon"] }}" height="95px" style="max-width: 95px;" />
 			                    <div class="align middle" style="height:100%;display:flex">
                             <img src="/plugin/packageDeployer/includes/{{ package["icon"] }}" style="width:100%;max-width:144px;margin:auto" />
 			                    </div>
