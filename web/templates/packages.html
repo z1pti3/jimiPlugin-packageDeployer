@@ -215,6 +215,9 @@
                           <br/>
                           {% if package["icon"] != "" %}
                             <img src="/plugin/packageDeployer/includes/{{ package["icon"] }}" height="95px" style="max-width: 95px;" />
+			                    <div class="align middle" style="height:100%;display:flex">
+                            <img src="/plugin/packageDeployer/includes/{{ package["icon"] }}" style="width:100%;max-width:144px;margin:auto" />
+			                    </div>
                           {% else %}
                             <img src="/plugin/packageDeployer/includes/none.svg" height="95px" style="max-width: 95px;" />
                           {% endif %}
