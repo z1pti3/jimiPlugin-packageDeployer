@@ -141,6 +141,15 @@
                                 <input type="password" class="form-control textbox" id="password" autoComplete="off" placeholder="Password" onkeyup="removeError()">
                                 <label for="password" class="bi-key"> Password</label>
                             </div>
+                            <div class="form-floating">
+                                <select class="form-control textbox" id="domain">
+                                    <option selected="selected" value={{ domains["default"] }}>{{ domains["default"] }}</option>
+                                    {% for domain in domains["additional"] %}
+                                    <option value={{ domain }}>{{ domain }}</option>
+                                    {% endfor %}
+                                  </select>
+                                <label for="domain" class="bi-diagram-3"> Domain</label>
+                            </div>
                             <br>                
                             <button class="w-100 btn btn-primary btn-block button bi-lock" type="submit" style="background-color: red;"> Login in</button>
                         </form>
@@ -173,7 +182,7 @@
     <script>
         $("#login").submit(function(e) {
             e.preventDefault();
-            var body = JSON.stringify({ username: $("#username").val(), password: $("#password").val() })
+            var body = JSON.stringify({ username: $("#username").val(), password: $("#password").val(), domain: $("#domain").val() })
             $.ajax({ url: "#", type : "POST", data:body, contentType:"application/json", success: function ( result ) {
                     $.ajax({ url: "devices/", type : "GET", contentType:"application/json", success: function ( result ) {
                             $('#devices').empty();
@@ -196,13 +205,9 @@
                     });
                 },
                 error: function ( result ) {
-                    if ($("#otp").parent().hasClass("hidden")) {
-                        $("#username").addClass("textboxError");
-                        $("#password").addClass("textboxError");
-                    } else {
-                        $("#username").removeClass("textboxError");
-                        $("#password").removeClass("textboxError");
-                    }
+                    alert(result["responseJSON"]["msg"]);
+                    $("#username").addClass("textboxError");
+                    $("#password").addClass("textboxError");
                 }
             });
         })

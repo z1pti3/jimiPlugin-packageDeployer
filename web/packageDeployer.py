@@ -3,6 +3,7 @@ from flask import current_app as app
 from pathlib import Path
 import functools
 import json
+from ldap3 import Server, Connection, ALL, NTLM
 
 from flask.helpers import make_response
 
@@ -36,14 +37,24 @@ def __PUBLIC__custom_static(file):
 
 @pluginPages.route("/",methods=["GET"])
 def __PUBLIC__mainPage():
-    return render_template("userLogin.html")
+    domainList = [x for x in jimi.settings.getSetting("ldap",None)["domains"]]
+    domains = {"default" : domainList[0]["name"], "additional" : [x["name"] for x in domainList[1:]]}
+    return render_template("userLogin.html", domains=domains)
 
 @pluginPages.route("/",methods=["POST"])
 def __PUBLIC__doLogin():
+    domains = jimi.settings.getSetting("ldap",None)["domains"]
     data = json.loads(jimi.api.request.data)
-    response = make_response()
-    response.set_cookie("packageDeployer", value=data["username"], max_age=1800, httponly=True)
-    return response, 200
+    domain = [x for x in domains if x["name"] == data["domain"]][0]
+    server = Server(domain["ip"], use_ssl=True, get_info=ALL)
+    conn = Connection(server, "{}\{}".format(data["domain"],data["username"]), data["password"], authentication=NTLM)
+    if conn.bind():
+        response = make_response({}, 200)
+        response.set_cookie("packageDeployer", value=data["username"], max_age=1800, httponly=True)
+    else:
+        response = make_response({ "msg": "Incorrect credentials" },403)
+    
+    return response
 
 @pluginPages.route("/devices/",methods=["GET"])
 @authenticated
