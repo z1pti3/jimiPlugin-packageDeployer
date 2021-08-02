@@ -359,3 +359,6 @@ __pycache__
 venv/
 .venv/
 .vscode
+web/includes/*.svg
+web/includes/*.png
+web/includes/*.jpg

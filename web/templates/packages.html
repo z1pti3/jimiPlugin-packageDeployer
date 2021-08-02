@@ -166,10 +166,10 @@
     <header class="site-header sticky-top py-1">
       <nav class="container d-flex flex-column flex-md-row justify-content-between" id="topbar">
         <img src="/plugin/packageDeployer/includes/logo.png" />
-        <span exact class="link">{{ device }}</span>
+        <a href="#" class="link bi-display" title="Choose device" onclick="showDevices()">{{ device }}</a>
         <div class="container" id="topbar-right">
           <a class="link linkRight bi-eject" href="/plugin/packageDeployer/">Logout</a>
-          <a class="link linkRight bi-info-circle" href="/plugin/packageDeployer/">Help</a>
+          <a class="link linkRight bi-info-circle" href="#" title="Show help" data-bs-toggle="modal" data-bs-target="#helpModal">Help</a>
         </div>
       </nav>
     </header>
@@ -217,7 +217,7 @@
                           {% endif %}
                           <br/>
                           {% if package["icon"] != "" %}
-			                    <div class="align middle" style="height:100%;display:flex">
+			                    <div class="align middle" style="height:75%;display:flex">
                             <img src="/plugin/packageDeployer/includes/{{ package["icon"] }}" style="width:100%;max-width:144px;margin:auto" />
 			                    </div>
                           {% else %}
@@ -279,6 +279,44 @@
           </div>
       </div>
     </div>
+    <!-- Modal device select -->
+    <div class="modal fade" id="selectDevice" tabindex="-1" role="dialog">
+      <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+          <div class="modal-content panel" style="background: linear-gradient(180deg, #012169 68px,#ffffff 0px);">
+              <div class="modal-header">
+                  <h5 class="modal-title" id="exampleModalLongTitle" style="color: white;">Select a device to continue</h5>
+                  </button>
+              </div>
+              <div class="modal-body">
+                  <div class="container-fluid p-5 text-center" id="custom-cards">
+                      <div class="row align-items-center g-4 p-5" id="devices">
+
+                      </div>
+                  </div>
+              </div>
+              <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="background-color: red;">Close</button>
+              </div>
+          </div>
+      </div>
+  </div>
+      <!-- Modal help -->
+      <div class="modal fade" id="helpModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+            <div class="modal-content panel" style="background: linear-gradient(180deg, #012169 68px,#ffffff 0px);">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLongTitle" style="color: white;">Package Deployer - Help</h5>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    This is some very useful help!
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="background-color: red;">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <script>
       var activePackage = "";
       function packageClick(package_id) {
@@ -308,6 +346,27 @@
             $('#statusText').text("Requested");
           }, error: function ( result ) {
             alert("Error: Unable to start install please try again later.");
+          }
+        });
+      }
+      function showDevices() {
+        $.ajax({ url: "/plugin/packageDeployer/devices", type : "GET", contentType:"application/json", success: function ( result ) {
+          $('#devices').empty();
+            for (x in result["results"]) {
+                var container = $('<div class="col triggerContainer">')
+                var link = $('<a href="/plugin/packageDeployer/device/'+result["results"][x]["_id"]+'/" class="noHover">');
+                var card = $('<div class="card h-100 iconContainer">');
+                var card_body = $('<div class="card-body">');
+                var icon = $('<img src="/plugin/packageDeployer/includes/computer.svg" height="95px"/>')
+                var card_footer = $('<div class="card-footer">').text(result["results"][x]["name"]);
+                container.append(link)
+                link.append(card)
+                card.append(card_body)
+                card_body.append(icon)
+                card.append(card_footer)
+                $('#devices').append(container);
+            } 
+            $('#selectDevice').modal('show')
           }
         });
       }
