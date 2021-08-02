@@ -3,7 +3,6 @@ from flask import current_app as app
 from pathlib import Path
 import functools
 import json
-from ldap3 import Server, Connection, ALL, NTLM
 
 from flask.helpers import make_response
 
@@ -16,15 +15,13 @@ from plugins.playbook.models import playbook
 pluginPages = Blueprint('packageDeployerPages', __name__, template_folder="templates")
 
 # SEC #
-# * Cookie needs to be replaced with jwt
 # * PUBLIC should be replaced with @publicEndpoint - need to build  
 
 def authenticated(f):
     @functools.wraps(f)
     def wrap(*args, **kwargs):
         try:
-            username = jimi.api.request.cookies["packageDeployer"]
-            if username:
+            if jimi.auth.validateSession(jimi.api.request.cookies["packageDeployer"],"packageDeployer"):
                 return f(*args, **kwargs)
         except Exception as e:
             pass
@@ -43,14 +40,14 @@ def __PUBLIC__mainPage():
 
 @pluginPages.route("/",methods=["POST"])
 def __PUBLIC__doLogin():
-    domains = jimi.settings.getSetting("ldap",None)["domains"]
     data = json.loads(jimi.api.request.data)
-    domain = [x for x in domains if x["name"] == data["domain"]][0]
-    server = Server(domain["ip"], use_ssl=True, get_info=ALL)
-    conn = Connection(server, "{}\{}".format(data["domain"],data["username"]), data["password"], authentication=NTLM)
-    if conn.bind():
+    if data["domain"] == "local":
+        userSession = jimi.auth.validateUser(data["username"],data["password"])
+    else:
+        userSession = jimi.auth.validateExternalUser(data["username"],data["password"],"ldap",domain=data["domain"],application="packageDeployer")
+    if userSession is not None:
         response = make_response({}, 200)
-        response.set_cookie("packageDeployer", value=data["username"], max_age=1800, httponly=True)
+        response.set_cookie("packageDeployer", value=userSession, max_age=1800, httponly=False)
     else:
         response = make_response({ "msg": "Incorrect credentials" },403)
     
@@ -59,8 +56,8 @@ def __PUBLIC__doLogin():
 @pluginPages.route("/devices/",methods=["GET"])
 @authenticated
 def __PUBLIC__devices():
-    username = jimi.api.request.cookies["packageDeployer"]
-    devices = asset._asset().query(query={ "assetType" : "computer", "fields.user" : username },fields=["name"])["results"]
+    sessionData = jimi.auth.validateSession(jimi.api.request.cookies["packageDeployer"],"packageDeployer",False)["sessionData"]
+    devices = asset._asset().query(query={ "assetType" : "computer", "fields.user" : sessionData["user"] },fields=["name"])["results"]
     result = []
     for device in devices:
         result.append({"_id" : device["_id"], "name" : device["name"]})
@@ -81,6 +78,7 @@ def __PUBLIC__packages(asset_id):
     playbookNames = []
     for package in packages:
         try:
+            #if 
             playbookNames.append(package["playbook_name"])
         except:
             pass
