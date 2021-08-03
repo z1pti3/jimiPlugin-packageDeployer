@@ -74,7 +74,7 @@ def __PUBLIC__manageDevicePage(asset_id):
 @pluginPages.route("/device/<asset_id>/packages/",methods=["GET"])
 @authenticated
 def __PUBLIC__packages(asset_id):
-    packages = packageDeployer._packageDeployer().query(query={"$or":[{"container_name":"","container":False},{"container_name":{"$exists":False},"container":False}]})["results"]
+    packages = packageDeployer._packageDeployer().query(query={"$or":[{"container_name":"","container":False},{"container_name":{"$exists":False},"$or":[{"container":False},{"container":{"$exists":False}}]}]})["results"]
     playbookNames = []
     for package in packages:
         try:
@@ -103,7 +103,7 @@ def __PUBLIC__packages(asset_id):
 def __PUBLIC__manageDeviceContainerPage(asset_id,container_id):
     packages = __PUBLIC__containerPackages(asset_id,container_id)[0]["results"]
     device = asset._asset().query(id=asset_id)["results"][0]["name"]
-    return render_template("packages.html", packages=packages, device=device, containers=[])
+    return render_template("packages.html", packages=packages, device=device, containers=[],isContainer=True)
 
 @pluginPages.route("/device/<asset_id>/<container_id>/packages/",methods=["GET"])
 @authenticated

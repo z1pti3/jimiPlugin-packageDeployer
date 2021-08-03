@@ -180,6 +180,9 @@
             <input type="text" class="form-control searchBox w-75" id="packageSearch" onkeyup="doPackageSearch()" placeholder="Search...">
           </div>
           <div class="window">
+            {% if isContainer %}
+            <a href="#" style="color:#000000;height:auto;text-align:left;flex-direction:column;" class="link" title="Previous Page" onclick="goBack()"><span class= bi-arrow-left-square> Previous Directory</span></a>
+            {% endif %}
             <div class="row row-cols-1 row-cols-lg-5 align-items-stretch g-4 p-5">
               {% for container in containers|sort(attribute='name') %}
               <div class="col packageContainer" data-name="{{ container["name"] }}" id="container_{{ container["_id"] }}" style="cursor: pointer;">
@@ -369,6 +372,9 @@
             $('#selectDevice').modal('show')
           }
         });
+      }
+      function goBack() {
+        window.history.back();
       }
       function refreshPackages() {
         $.ajax({ url: "packages/", type : "GET", contentType:"application/json", success: function ( result ) {
