@@ -25,7 +25,7 @@ def authenticated(f):
                 return f(*args, **kwargs)
         except Exception as e:
             pass
-        return "Authentication Required", 403
+        return render_template("error.html")
     return wrap
 
 @pluginPages.route('/includes/<file>')

@@ -1,0 +1,150 @@
+<html>
+  <head>
+    <script src="{{ url_for('static', filename='includes/popper-2.9.2/popper-2.9.2.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='includes/bootstrap-5.0.0-beta3/css/bootstrap.min.css') }}">
+    <script src="{{ url_for('static', filename='includes/bootstrap-5.0.0-beta3/js/bootstrap.min.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='includes/bootstrap-icons-1.5.0/bootstrap-icons.css') }}">
+    <script src="{{ url_for('static', filename='includes/jquery-3.6.0/js/jquery-3.6.0.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='javascript/helpers.js') }}"></script>
+    <style>
+      *::-webkit-scrollbar {
+        width: 12px;
+      }
+      *::-webkit-scrollbar-track {
+        background: white;
+      }
+
+      *::-webkit-scrollbar-thumb {
+        background-color: #e2e2e2;
+      }
+      body {
+        background-image: url("/plugin/packageDeployer/includes/background.jpg");
+        background-repeat:no-repeat;
+        background-position: center center;
+        overflow: hidden;
+      }
+      a {
+        text-decoration: none;
+      }
+      .main {
+        background-color: #e2e2e2;
+        overflow: hidden;
+      }
+      .panel {
+                overflow-y: auto;
+                background-color: white;
+                box-shadow: 0 1px 6px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.24);
+                color: var(--textColor);
+                padding: 5px;
+                border-style: solid;
+                border-color: #000000;
+                border-width: 1px;
+                border-radius: 5px;
+                border-radius: 15px;
+            }
+      .window {
+        background-color: white;
+        height: 80%;
+        overflow-y: auto;
+        overflow-x: hidden;
+        box-shadow: 0 1px 6px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.24);
+        border-color: #161616;
+        border-width: 1px;
+        border-style: solid;
+      }
+      .home {
+          padding-left: 10px;
+          padding-right: 30px;
+          vertical-align: middle;
+          text-align: center;
+          display: flex;
+          height: 100%;
+          flex-direction: column;
+          justify-content: center;
+          line-height: unset;
+          font-weight: 600;
+          font-size: 35px;
+          color: white;
+      }
+
+      .home:hover {
+          color: white;
+          text-decoration: none;
+      }
+
+      .home:active, .homeActive {
+          color: white;
+          text-decoration: none;
+          background-color: unset;
+      }
+
+      .link {
+          padding-left: 10px;
+          padding-right: 10px;
+          text-align: center;
+          vertical-align: bottom;
+          display: flex;
+          height: 100%;
+          flex-direction: column;
+          justify-content: flex-end;
+          color: white;
+          min-width:110px;
+      }
+
+      .link:hover {
+          background-color: red;
+          color: white;
+          text-decoration: none;
+      }
+
+      .link:focus, .active {
+          background-color: #012169;
+      }
+    </style>
+  </head>
+  <body class="main">
+    <main>
+        <!-- Modal help -->
+        <div class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" id="helpModal" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+                <div class="modal-content panel" style="background: linear-gradient(180deg, #012169 68px,#ffffff 0px);">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLongTitle" style="color: white;">Package Deployer - Page Not Found</h5>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        Sorry, we weren't able to find the page you were looking for! It's possible your session has expired and you need to login again.
+                        <br>
+                        This page will redirect in <span id="timeCountdown">10 seconds</span>, or you can click the button below to return to the login page.
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" style="background-color: red;" onclick="returnToLogin()">Return to Login</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    </div>
+    <script>
+    $(window).on('load', function() {
+        $('#helpModal').modal('show');
+        var timeleft = 10;
+        var downloadTimer = setInterval(function(){
+        if(timeleft <= 0){
+            window.location.href = "/plugin/packageDeployer/";
+        }
+        else if (timeleft == 1){
+            document.getElementById("timeCountdown").innerHTML = timeleft + " second";
+        }
+        else {
+            document.getElementById("timeCountdown").innerHTML = timeleft + " seconds";
+        }
+        timeleft -= 1;
+        }, 1000);
+    });
+    function returnToLogin() {
+        window.location.href = "/plugin/packageDeployer/"
+      }
+    </script>
+  </body>
+</html>
